@@ -2,18 +2,18 @@ how to add more tests:<br />
 1.<br />
 &nbsp; read the representation of a 2x2 cube in cube.h<br />
 2.<br />
-*Tabspace* in tests.h, add a function with the type<br /> 
-*Tabspace* bool f(struct cube* c)<br />
+&nbsp; in tests.h, add a function with the type<br /> 
+&nbsp; bool f(struct cube* c)<br />
 3.<br /> 
-*Tabspace* let f return true if c has a state that is considered "solved" for this test, and false otherwise<br />
+&nbsp; let f return true if c has a state that is considered "solved" for this test, and false otherwise<br />
 4.<br /> 
-*Tabspace* in the array bool (*tests[TESTS])(struct cube*)<br />
-*Tabspace* add<br />
-*Tabspace* f,<br />
+&nbsp; in the array bool (*tests[TESTS])(struct cube*)<br />
+&nbsp; add<br />
+&nbsp; f,<br />
 5.<br /> 
-*Tabspace* in the array char description_tests[TESTS][50]<br />
-*Tabspace* add<br /> 
-*Tabspace* "a description of the test",<br />
+&nbsp; in the array char description_tests[TESTS][50]<br />
+&nbsp; add<br /> 
+&nbsp; "a description of the test",<br />
 6.<br /> 
-*Tabspace* in #define TESTS x<br />
-*Tabspace* increase x by 1<br />
+&nbsp; in #define TESTS x<br />
+&nbsp; increase x by 1<br />
