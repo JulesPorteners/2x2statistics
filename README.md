@@ -1,6 +1,6 @@
 how to add more tests:<br />
 1.<br />
-&nbsp; read the representation of a 2x2 cube in cube.h<br />
+&nbsp;&nbsp; read the representation of a 2x2 cube in cube.h<br />
 2.<br />
 &nbsp; in tests.h, add a function with the type<br /> 
 &nbsp; bool f(struct cube\* c)<br />
