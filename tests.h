@@ -176,6 +176,8 @@ bool pred_CBL_or_TCBL_colour_neutral(struct cube* c){
     return false;
 }
 
+//TODO somehow some primitive predicates that can be combined?
+
 bool filter_nobar(struct cube* c){
     return !filter_bar(c);
 }

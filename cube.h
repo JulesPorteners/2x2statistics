@@ -3,16 +3,17 @@
 
 #include "types.h"
 
-#define ORANGE 0
-#define RED 1
-#define YELLOW 2
-#define WHITE 3
-#define BLUE 4
-#define GREEN 5
+#define ORANGE UINT8_C(0)
+#define RED UINT8_C(1)
+#define YELLOW UINT8_C(2)
+#define WHITE UINT8_C(3)
+#define BLUE UINT8_C(4)
+#define GREEN UINT8_C(5)
 
 struct cube{
-    //u64 stickers[x coordinate][y coordinate][z coordinate][direction (0 = x, 1 = y, 2 = z)];
-    u64 stickers[2][2][2][3];
+    //u8 stickers[x coordinate][y coordinate][z coordinate][direction (0 = x, 1 = y, 2 = z)];
+    //LDB: x = y = z = 0
+    u8 stickers[2][2][2][3];
 };
 
 void cube_constructor(struct cube* c){
@@ -43,7 +44,7 @@ void cube_constructor(struct cube* c){
 }
 
 void cube_move_R_normal(struct cube* c){
-    u64 temp;
+    u8 temp;
     temp = c->stickers[1][0][0][1];
     c->stickers[1][0][0][1] = c->stickers[1][1][0][2];
     c->stickers[1][1][0][2] = c->stickers[1][1][1][1];
@@ -62,7 +63,7 @@ void cube_move_R_normal(struct cube* c){
 }
 
 void cube_move_R_inverse(struct cube* c){
-    u64 temp;
+    u8 temp;
     temp = c->stickers[1][0][0][1];
     c->stickers[1][0][0][1] = c->stickers[1][0][1][2];
     c->stickers[1][0][1][2] = c->stickers[1][1][1][1];
@@ -81,7 +82,7 @@ void cube_move_R_inverse(struct cube* c){
 }
 
 void cube_move_R_double(struct cube* c){
-    u64 temp;
+    u8 temp;
     temp = c->stickers[1][0][0][1];
     c->stickers[1][0][0][1] = c->stickers[1][1][1][1];
     c->stickers[1][1][1][1] = temp;
@@ -103,7 +104,7 @@ void cube_move_R_double(struct cube* c){
 }
 
 void cube_move_U_normal(struct cube* c){
-    u64 temp;
+    u8 temp;
     temp = c->stickers[0][1][0][1];
     c->stickers[0][1][0][1] = c->stickers[0][1][1][1];
     c->stickers[0][1][1][1] = c->stickers[1][1][1][1];
@@ -122,7 +123,7 @@ void cube_move_U_normal(struct cube* c){
 }
 
 void cube_move_U_inverse(struct cube* c){
-    u64 temp;
+    u8 temp;
     temp = c->stickers[0][1][0][1];
     c->stickers[0][1][0][1] = c->stickers[1][1][0][1];
     c->stickers[1][1][0][1] = c->stickers[1][1][1][1];
@@ -141,7 +142,7 @@ void cube_move_U_inverse(struct cube* c){
 }
 
 void cube_move_U_double(struct cube* c){
-    u64 temp;
+    u8 temp;
     temp = c->stickers[0][1][0][1];
     c->stickers[0][1][0][1] = c->stickers[1][1][1][1];
     c->stickers[1][1][1][1] = temp;
@@ -163,7 +164,7 @@ void cube_move_U_double(struct cube* c){
 }
 
 void cube_move_F_normal(struct cube* c){
-    u64 temp;
+    u8 temp;
     temp = c->stickers[0][0][1][1];
     c->stickers[0][0][1][1] = c->stickers[1][0][1][0];
     c->stickers[1][0][1][0] = c->stickers[1][1][1][1];
@@ -182,7 +183,7 @@ void cube_move_F_normal(struct cube* c){
 }
 
 void cube_move_F_inverse(struct cube* c){
-    u64 temp;
+    u8 temp;
     temp = c->stickers[0][0][1][1];
     c->stickers[0][0][1][1] = c->stickers[0][1][1][0];
     c->stickers[0][1][1][0] = c->stickers[1][1][1][1];
@@ -201,7 +202,7 @@ void cube_move_F_inverse(struct cube* c){
 }
 
 void cube_move_F_double(struct cube* c){
-    u64 temp;
+    u8 temp;
     temp = c->stickers[0][0][1][1];
     c->stickers[0][0][1][1] = c->stickers[1][1][1][1];
     c->stickers[1][1][1][1] = temp;

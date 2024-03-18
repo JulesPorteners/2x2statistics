@@ -21,7 +21,7 @@ u64 id(struct cube* c){
         for (u64 y = 0; y < 2; y++){
             for (u64 z = 0; z < 2; z++){
                 for (u64 d = 0; d < 3; d++){
-                    sum += c->stickers[x][y][z][d] * base;
+                    sum += ((u64) c->stickers[x][y][z][d]) * base;
                     base *= 6;
                 }
             }

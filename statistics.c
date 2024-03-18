@@ -31,13 +31,13 @@ void generate_statistics(){
         }
         printf("moves");
         for (u64 t = 0; t < TESTS; t++){
-            printf("% 10c", (char) (t + 'A'));
+            printf("%10c", (char) (t + 'A'));
         }  
         printf("\n");
         for (u64 i = 0; i < 12; i++){
-            printf("% 5" PRIu64, i);
+            printf("%5" PRIu64, i);
             for (u64 t = 0; t < TESTS; t++){
-                printf("% 10" PRIu64, statistics[t][i]);
+                printf("%10" PRIu64, statistics[t][i]);
             }
             printf("\n");
         }
@@ -49,7 +49,7 @@ void generate_statistics(){
                 sum += statistics[t][i];
                 weighted_sum += i * statistics[t][i];
             }
-            printf("% 10.2f", ((f64) weighted_sum) / ((f64) sum));
+            printf("%10.2f", ((f64) weighted_sum) / ((f64) sum));
         }
         printf("\ntot  ");
         for (u64 t = 0; t < TESTS; t++){
@@ -57,7 +57,7 @@ void generate_statistics(){
             for (u64 i = 0; i < 12; i++){
                 sum += statistics[t][i];
             }
-            printf("% 10" PRIu64, sum);
+            printf("%10" PRIu64, sum);
         }
         printf("\n\n");
     }
