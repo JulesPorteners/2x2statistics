@@ -6,7 +6,7 @@
 #include "hash_table.h"
 #include "cubes_and_graph.h"
 
-#define TESTS 6
+#define TESTS 7
 u64 distances[TESTS][STATES];
 u64 statistics[TESTS][12];
 char description_tests[TESTS][50] = {
@@ -16,6 +16,7 @@ char description_tests[TESTS][50] = {
     "dr white yellow",
     "dr colourneutral",
     "CBL or TCBL colourneutral",
+    "cll yellow",
 };
 
 #define FILTERS 3
@@ -36,7 +37,7 @@ void generate_distances(bool (*pred)(struct cube*), u64 t){
             distances[t][i] = INFINITY;
         }
     }
-    while (true){
+    for (u64 j = 0; j < 12; j++){
         bool change = false;
         for (u64 i = 0; i < STATES; i++){
             for (u64 m = 0; m < 9; m++){
@@ -176,7 +177,19 @@ bool pred_CBL_or_TCBL_colour_neutral(struct cube* c){
     return false;
 }
 
-//TODO somehow some primitive predicates that can be combined?
+bool pred_cll_yellow(struct cube* c){
+    bool yellow = c->stickers[0][0][0][1] == YELLOW && c->stickers[0][0][1][1] == YELLOW && c->stickers[1][0][0][1] == YELLOW && c->stickers[1][0][1][1] == YELLOW;
+    bool ring = c->stickers[0][0][0][2] == BLUE && c->stickers[1][0][0][2] == BLUE && c->stickers[0][0][0][0] == ORANGE && c->stickers[0][0][1][0] == ORANGE ;
+    bool ring2 = c->stickers[0][0][1][2] == GREEN && c->stickers[1][0][1][2] == GREEN && c->stickers[1][0][0][0] == RED && c->stickers[1][0][1][0] == RED ;
+    return yellow && ring && ring2;
+}
+
+bool pred_cll_or_tcll_colourneutral(struct cube* c){
+
+}
+
+
+
 
 bool filter_nobar(struct cube* c){
     return !filter_bar(c);
@@ -189,6 +202,7 @@ bool (*tests[TESTS])(struct cube*) = {
     pred_dr_du,
     pred_dr,
     pred_CBL_or_TCBL_colour_neutral,
+    pred_cll_yellow,
 };
 
 bool (*filters[FILTERS])(struct cube*) = {

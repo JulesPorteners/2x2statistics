@@ -8,13 +8,12 @@
 
 void generate_statistics(){
     for (u64 t = 0; t < TESTS; t++){
+        generate_distances(tests[t], t);
+    }
+    for (u64 t = 0; t < TESTS; t++){
         printf("%c = %s\n", (char) (t + 'A'), description_tests[t]);
     }
     printf("\n");
-    for (u64 t = 0; t < TESTS; t++){
-        generate_distances(tests[t], t);
-    }
-
     for (u64 f = 0; f < FILTERS; f++){
         printf("--- %s ---\n\n", description_filters[f]);
         for (u64 t = 0; t < TESTS; t++){
