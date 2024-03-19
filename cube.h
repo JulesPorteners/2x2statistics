@@ -10,6 +10,10 @@
 #define BLUE UINT8_C(4)
 #define GREEN UINT8_C(5)
 
+#define GOD 11
+#define MOVES 9
+#define COLOURS 6
+
 struct cube{
     //u8 stickers[x coordinate][y coordinate][z coordinate][direction (0 = x, 1 = y, 2 = z)];
     //LDB: x = y = z = 0

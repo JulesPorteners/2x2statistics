@@ -6,17 +6,18 @@
 #include "hash_table.h"
 #include "cubes_and_graph.h"
 
-#define TESTS 7
+#define TESTS 8
 u64 distances[TESTS][STATES];
 u64 statistics[TESTS][12];
 char description_tests[TESTS][50] = {
     "solved",
-    "face colourneutral",
-    "face yellow",
-    "dr white yellow",
-    "dr colourneutral",
-    "CBL or TCBL colourneutral",
     "cll yellow",
+    "cll colour neutral",
+    "face yellow",
+    "face colour neutral",
+    "dr white yellow",
+    "dr colour neutral",
+    "CBL or TCBL colour neutral",
 };
 
 #define FILTERS 3
@@ -37,7 +38,7 @@ void generate_distances(bool (*pred)(struct cube*), u64 t){
             distances[t][i] = INFINITY;
         }
     }
-    for (u64 j = 0; j < 12; j++){
+    for (u64 j = 0; j < 12 - 1; j++){
         bool change = false;
         for (u64 i = 0; i < STATES; i++){
             for (u64 m = 0; m < 9; m++){
@@ -184,12 +185,26 @@ bool pred_cll_yellow(struct cube* c){
     return yellow && ring && ring2;
 }
 
-bool pred_cll_or_tcll_colourneutral(struct cube* c){
-
+bool pred_cll_colour_neutral(struct cube* c){
+    for (u8 x = 0; x < COLOURS; x++){
+        bool l = c->stickers[0][0][0][0] == x && c->stickers[0][0][1][0] == x && c->stickers[0][1][0][0] == x && c->stickers[0][1][1][0] == x
+                 && c->stickers[0][0][0][1] == c->stickers[0][0][1][1] && c->stickers[0][0][0][2] == c->stickers[0][1][0][2];
+        bool r = c->stickers[1][0][0][0] == x && c->stickers[1][0][1][0] == x && c->stickers[1][1][0][0] == x && c->stickers[1][1][1][0] == x
+                 && c->stickers[1][0][0][1] == c->stickers[1][0][1][1] && c->stickers[1][0][0][2] == c->stickers[1][1][0][2];
+        bool d = c->stickers[0][0][0][1] == x && c->stickers[0][0][1][1] == x && c->stickers[1][0][0][1] == x && c->stickers[1][0][1][1] == x
+                 && c->stickers[0][0][0][0] == c->stickers[0][0][1][0] && c->stickers[0][0][0][2] == c->stickers[1][0][0][2];
+        bool u = c->stickers[0][1][0][1] == x && c->stickers[0][1][1][1] == x && c->stickers[1][1][0][1] == x && c->stickers[1][1][1][1] == x
+                 && c->stickers[0][1][0][0] == c->stickers[0][1][1][0] && c->stickers[0][1][0][2] == c->stickers[1][1][0][2];        
+        bool b = c->stickers[0][0][0][2] == x && c->stickers[0][1][0][2] == x && c->stickers[1][0][0][2] == x && c->stickers[1][1][0][2] == x
+                 && c->stickers[0][0][0][0] == c->stickers[0][1][0][0] && c->stickers[0][0][0][1] == c->stickers[1][0][0][1];          
+        bool f = c->stickers[0][0][1][2] == x && c->stickers[0][1][1][2] == x && c->stickers[1][0][1][2] == x && c->stickers[1][1][1][2] == x
+                 && c->stickers[0][0][1][0] == c->stickers[0][1][1][0] && c->stickers[0][0][1][1] == c->stickers[1][0][1][1]; 
+        if (l || r || d || u || b || f){
+            return true;
+        }
+    }
+    return false;
 }
-
-
-
 
 bool filter_nobar(struct cube* c){
     return !filter_bar(c);
@@ -197,14 +212,26 @@ bool filter_nobar(struct cube* c){
 
 bool (*tests[TESTS])(struct cube*) = {
     pred_solved,
+    pred_cll_yellow,
+    pred_cll_colour_neutral,
+    pred_face_yellow,
+    pred_face_colourneutral,
+    pred_dr_du,
+    pred_dr,
+    pred_CBL_or_TCBL_colour_neutral,
+};
+/*
+
+pred_solved,
     pred_face_colourneutral,
     pred_face_yellow,
     pred_dr_du,
     pred_dr,
     pred_CBL_or_TCBL_colour_neutral,
     pred_cll_yellow,
-};
+    pred_cll_colour_neutral,
 
+*/
 bool (*filters[FILTERS])(struct cube*) = {
     filter_all,
     filter_bar,

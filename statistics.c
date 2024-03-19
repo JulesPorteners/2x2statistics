@@ -5,6 +5,7 @@
 #include "hash_table.h"
 #include "cubes_and_graph.h"
 #include "tests.h"
+#include "solver.h"
 
 void generate_statistics(){
     for (u64 t = 0; t < TESTS; t++){
