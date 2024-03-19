@@ -220,18 +220,7 @@ bool (*tests[TESTS])(struct cube*) = {
     pred_dr,
     pred_CBL_or_TCBL_colour_neutral,
 };
-/*
 
-pred_solved,
-    pred_face_colourneutral,
-    pred_face_yellow,
-    pred_dr_du,
-    pred_dr,
-    pred_CBL_or_TCBL_colour_neutral,
-    pred_cll_yellow,
-    pred_cll_colour_neutral,
-
-*/
 bool (*filters[FILTERS])(struct cube*) = {
     filter_all,
     filter_bar,
