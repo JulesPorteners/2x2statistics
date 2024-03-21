@@ -6,7 +6,7 @@
 #include "hash_table.h"
 #include "cubes_and_graph.h"
 
-#define TESTS 10
+#define TESTS 15
 u64 distances[TESTS][STATES];
 u64 statistics[TESTS][12];
 char description_tests[TESTS][50] = {
@@ -17,11 +17,15 @@ char description_tests[TESTS][50] = {
     "eg colour neutral",
     "dr white yellow",
     "dr colour neutral",
-    "tcll (including cll) colour_neutral",
+    "tcll (including cll) yellow",
+    "tcll (including cll) colour neutral",
+    "teg (including eg) yellow",
     "teg (including eg) colour neutral",
+    "ls (including tcll and cll) yellow",
+    "ls (including tcll and cll) colour neutral",
+    "CBL or TCBL yellow",
     "CBL or TCBL colour neutral",
 };
-
 
 #define FILTERS 3
 char description_filters[FILTERS][50] = {
@@ -41,7 +45,7 @@ void generate_distances(bool (*pred)(struct cube*), u64 t){
             distances[t][i] = INFINITY;
         }
     }
-    for (u64 j = 0; j < 12 - 1; j++){
+    for (u64 j = 0; j < GOD; j++){
         bool change = false;
         for (u64 i = 0; i < STATES; i++){
             for (u64 m = 0; m < 9; m++){
@@ -181,6 +185,23 @@ bool pred_CBL_or_TCBL_colour_neutral(struct cube* c){
     return false;
 }
 
+bool pred_CBL_or_TCBL_yellow(struct cube* c){ 
+    u64 colour = YELLOW;
+    bool l = (c->stickers[0][0][0][0] == colour || c->stickers[0][0][0][1] == colour || c->stickers[0][0][0][2] == colour) &&
+                (c->stickers[0][0][1][0] == colour || c->stickers[0][0][1][1] == colour || c->stickers[0][0][1][2] == colour) &&
+                (c->stickers[0][1][0][0] == colour || c->stickers[0][1][0][1] == colour || c->stickers[0][1][0][2] == colour) &&
+                (c->stickers[0][1][1][0] == colour || c->stickers[0][1][1][1] == colour || c->stickers[0][1][1][2] == colour);
+    bool d = (c->stickers[0][0][0][0] == colour || c->stickers[0][0][0][1] == colour || c->stickers[0][0][0][2] == colour) &&
+                (c->stickers[0][0][1][0] == colour || c->stickers[0][0][1][1] == colour || c->stickers[0][0][1][2] == colour) &&
+                (c->stickers[1][0][0][0] == colour || c->stickers[1][0][0][1] == colour || c->stickers[1][0][0][2] == colour) &&
+                (c->stickers[1][0][1][0] == colour || c->stickers[1][0][1][1] == colour || c->stickers[1][0][1][2] == colour); 
+    bool b = (c->stickers[0][0][0][0] == colour || c->stickers[0][0][0][1] == colour || c->stickers[0][0][0][2] == colour) &&
+                (c->stickers[0][1][0][0] == colour || c->stickers[0][1][0][1] == colour || c->stickers[0][1][0][2] == colour) &&
+                (c->stickers[1][0][0][0] == colour || c->stickers[1][0][0][1] == colour || c->stickers[1][0][0][2] == colour) &&
+                (c->stickers[1][1][0][0] == colour || c->stickers[1][1][0][1] == colour || c->stickers[1][1][0][2] == colour); 
+    return (l || d || b);
+}
+
 bool pred_cll_yellow(struct cube* c){
     bool yellow = c->stickers[0][0][0][1] == YELLOW && c->stickers[0][0][1][1] == YELLOW && c->stickers[1][0][0][1] == YELLOW && c->stickers[1][0][1][1] == YELLOW;
     bool ring = c->stickers[0][0][0][2] == BLUE && c->stickers[1][0][0][2] == BLUE && c->stickers[0][0][0][0] == ORANGE && c->stickers[0][0][1][0] == ORANGE ;
@@ -217,12 +238,30 @@ void twist(struct cube* c, u64 x, u64 y, u64 z){
 }
 
 bool pred_teg_including_eg_colour_neutral(struct cube* c){
+    struct cube cc = *c;
     for (u64 x = 0; x < 2; x++){
         for (u64 y = 0; y < 2; y++){
             for (u64 z = 0; z < 2; z++){
                 for (u64 i = 0; i < 3; i++){
-                    twist(c, x, y, z);
-                    if (pred_face_colourneutral(c)){
+                    twist(&cc, x, y, z);
+                    if (pred_face_colourneutral(&cc)){
+                        return true;
+                    }
+                } 
+            }
+        }
+    }
+    return false;
+}
+
+bool pred_teg_including_eg_yellow(struct cube* c){
+    struct cube cc = *c;
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                for (u64 i = 0; i < 3; i++){
+                    twist(&cc, x, y, z);
+                    if (pred_face_yellow(&cc)){
                         return true;
                     }
                 } 
@@ -233,15 +272,79 @@ bool pred_teg_including_eg_colour_neutral(struct cube* c){
 }
 
 bool pred_tcll_including_cll_colour_neutral(struct cube* c){
+    struct cube cc = *c;
     for (u64 x = 0; x < 2; x++){
         for (u64 y = 0; y < 2; y++){
             for (u64 z = 0; z < 2; z++){
                 for (u64 i = 0; i < 3; i++){
-                    twist(c, x, y, z);
-                    if (pred_cll_colour_neutral(c)){
+                    twist(&cc, x, y, z);
+                    if (pred_cll_colour_neutral(&cc)){
                         return true;
                     }
                 } 
+            }
+        }
+    }
+    return false;
+}
+
+bool pred_tcll_including_cll_yellow(struct cube* c){
+    struct cube cc = *c;
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                for (u64 i = 0; i < 3; i++){
+                    twist(&cc, x, y, z);
+                    if (pred_cll_yellow(&cc)){
+                        return true;
+                    }
+                } 
+            }
+        }
+    }
+    return false;
+}
+
+bool pred_ls_including_tcll_and_cll_colour_neutral(struct cube* c){
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                u64 count = 0;
+                if (c->stickers[x][y][z][1] == c->stickers[1 - x][y][z][1] && c->stickers[x][y][z][2] == c->stickers[1 - x][y][z][2]){
+                    count++;
+                }
+                if (c->stickers[x][y][z][0] == c->stickers[x][1 - y][z][0] && c->stickers[x][y][z][2] == c->stickers[x][1 - y][z][2]){
+                    count++;
+                }
+                if (c->stickers[x][y][z][0] == c->stickers[x][y][1 - z][0] && c->stickers[x][y][z][1] == c->stickers[x][y][1 - z][1]){
+                    count++;
+                }
+                if (count >= 2){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool pred_ls_including_tcll_and_cll_yellow(struct cube* c){
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                u64 count = 0;
+                if (c->stickers[x][y][z][1] == c->stickers[1 - x][y][z][1] && c->stickers[x][y][z][2] == c->stickers[1 - x][y][z][2] && (c->stickers[x][y][z][1] == YELLOW || c->stickers[x][y][z][2] == YELLOW)){
+                    count++;
+                }
+                if (c->stickers[x][y][z][0] == c->stickers[x][1 - y][z][0] && c->stickers[x][y][z][2] == c->stickers[x][1 - y][z][2] && (c->stickers[x][y][z][0] == YELLOW || c->stickers[x][y][z][2] == YELLOW)){
+                    count++;
+                }
+                if (c->stickers[x][y][z][0] == c->stickers[x][y][1 - z][0] && c->stickers[x][y][z][1] == c->stickers[x][y][1 - z][1] && (c->stickers[x][y][z][0] == YELLOW || c->stickers[x][y][z][1] == YELLOW)){
+                    count++;
+                }
+                if (count >= 2){
+                    return true;
+                }
             }
         }
     }
@@ -260,8 +363,13 @@ bool (*tests[TESTS])(struct cube*) = {
     pred_face_colourneutral,
     pred_dr_du,
     pred_dr,
+    pred_tcll_including_cll_yellow,
     pred_tcll_including_cll_colour_neutral,
+    pred_teg_including_eg_yellow,
     pred_teg_including_eg_colour_neutral,
+    pred_ls_including_tcll_and_cll_yellow,
+    pred_ls_including_tcll_and_cll_colour_neutral,
+    pred_CBL_or_TCBL_yellow,
     pred_CBL_or_TCBL_colour_neutral,
 };
 
