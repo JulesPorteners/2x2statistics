@@ -6,7 +6,7 @@
 #include "hash_table.h"
 #include "cubes_and_graph.h"
 
-#define TESTS 15
+#define TESTS 17
 u64 distances[TESTS][STATES];
 u64 statistics[TESTS][12];
 char description_tests[TESTS][50] = {
@@ -25,6 +25,8 @@ char description_tests[TESTS][50] = {
     "ls (including tcll and cll) colour neutral",
     "CBL or TCBL yellow",
     "CBL or TCBL colour neutral",
+    "eg or tcll yellow",
+    "eg or tcll colour neutral",
 };
 
 #define FILTERS 3
@@ -375,6 +377,14 @@ bool pred_ls_including_tcll_and_cll_yellow(struct cube* c){
     return false;
 }
 
+bool pred_tcll_or_eg_yellow(struct cube* c){
+    return pred_tcll_including_cll_yellow(c) || pred_face_yellow(c);
+}
+
+bool pred_tcll_or_eg_colour_neutral(struct cube* c){
+    return pred_tcll_including_cll_colour_neutral(c) || pred_face_colourneutral(c);
+}
+
 bool filter_nobar(struct cube* c){
     return !filter_bar(c);
 }
@@ -395,6 +405,8 @@ bool (*tests[TESTS])(struct cube*) = {
     pred_ls_including_tcll_and_cll_colour_neutral,
     pred_CBL_or_TCBL_yellow,
     pred_CBL_or_TCBL_colour_neutral,
+    pred_tcll_or_eg_yellow,
+    pred_tcll_or_eg_colour_neutral,
 };
 
 bool (*filters[FILTERS])(struct cube*) = {
