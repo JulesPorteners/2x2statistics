@@ -83,8 +83,17 @@ bool pred_face_colourneutral(struct cube* c){
 }
 
 bool pred_face_yellow(struct cube* c){ 
+    u64 x = YELLOW;
+    bool l = c->stickers[0][0][0][0] == x && c->stickers[0][0][1][0] == x && c->stickers[0][1][0][0] == x && c->stickers[0][1][1][0] == x;
+    bool r = c->stickers[1][0][0][0] == x && c->stickers[1][0][1][0] == x && c->stickers[1][1][0][0] == x && c->stickers[1][1][1][0] == x;
+    bool d = c->stickers[0][0][0][1] == x && c->stickers[0][0][1][1] == x && c->stickers[1][0][0][1] == x && c->stickers[1][0][1][1] == x;
+    bool u = c->stickers[0][1][0][1] == x && c->stickers[0][1][1][1] == x && c->stickers[1][1][0][1] == x && c->stickers[1][1][1][1] == x;
+    bool b = c->stickers[0][0][0][2] == x && c->stickers[0][1][0][2] == x && c->stickers[1][0][0][2] == x && c->stickers[1][1][0][2] == x;
+    bool f = c->stickers[0][0][1][2] == x && c->stickers[0][1][1][2] == x && c->stickers[1][0][1][2] == x && c->stickers[1][1][1][2] == x;
+    return l || r || d || u || b || f;
+    /*
     bool yellow = c->stickers[0][0][0][1] == YELLOW && c->stickers[0][0][1][1] == YELLOW && c->stickers[1][0][0][1] == YELLOW && c->stickers[1][0][1][1] == YELLOW;
-    return yellow;
+    return yellow;*/
 }
 
 bool pred_dr_lr(struct cube* c){ 
@@ -203,10 +212,25 @@ bool pred_CBL_or_TCBL_yellow(struct cube* c){
 }
 
 bool pred_cll_yellow(struct cube* c){
+    u8 x = YELLOW;
+    bool l = c->stickers[0][0][0][0] == x && c->stickers[0][0][1][0] == x && c->stickers[0][1][0][0] == x && c->stickers[0][1][1][0] == x
+                && c->stickers[0][0][0][1] == c->stickers[0][0][1][1] && c->stickers[0][0][0][2] == c->stickers[0][1][0][2];
+    bool r = c->stickers[1][0][0][0] == x && c->stickers[1][0][1][0] == x && c->stickers[1][1][0][0] == x && c->stickers[1][1][1][0] == x
+                && c->stickers[1][0][0][1] == c->stickers[1][0][1][1] && c->stickers[1][0][0][2] == c->stickers[1][1][0][2];
+    bool d = c->stickers[0][0][0][1] == x && c->stickers[0][0][1][1] == x && c->stickers[1][0][0][1] == x && c->stickers[1][0][1][1] == x
+                && c->stickers[0][0][0][0] == c->stickers[0][0][1][0] && c->stickers[0][0][0][2] == c->stickers[1][0][0][2];
+    bool u = c->stickers[0][1][0][1] == x && c->stickers[0][1][1][1] == x && c->stickers[1][1][0][1] == x && c->stickers[1][1][1][1] == x
+                && c->stickers[0][1][0][0] == c->stickers[0][1][1][0] && c->stickers[0][1][0][2] == c->stickers[1][1][0][2];        
+    bool b = c->stickers[0][0][0][2] == x && c->stickers[0][1][0][2] == x && c->stickers[1][0][0][2] == x && c->stickers[1][1][0][2] == x
+                && c->stickers[0][0][0][0] == c->stickers[0][1][0][0] && c->stickers[0][0][0][1] == c->stickers[1][0][0][1];          
+    bool f = c->stickers[0][0][1][2] == x && c->stickers[0][1][1][2] == x && c->stickers[1][0][1][2] == x && c->stickers[1][1][1][2] == x
+                && c->stickers[0][0][1][0] == c->stickers[0][1][1][0] && c->stickers[0][0][1][1] == c->stickers[1][0][1][1]; 
+    return l || r || d || u || b || f;
+    /*
     bool yellow = c->stickers[0][0][0][1] == YELLOW && c->stickers[0][0][1][1] == YELLOW && c->stickers[1][0][0][1] == YELLOW && c->stickers[1][0][1][1] == YELLOW;
     bool ring = c->stickers[0][0][0][2] == BLUE && c->stickers[1][0][0][2] == BLUE && c->stickers[0][0][0][0] == ORANGE && c->stickers[0][0][1][0] == ORANGE ;
     bool ring2 = c->stickers[0][0][1][2] == GREEN && c->stickers[1][0][1][2] == GREEN && c->stickers[1][0][0][0] == RED && c->stickers[1][0][1][0] == RED ;
-    return yellow && ring && ring2;
+    return yellow && ring && ring2;*/
 }
 
 bool pred_cll_colour_neutral(struct cube* c){
