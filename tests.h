@@ -29,11 +29,12 @@ char description_tests[TESTS][50] = {
     "eg or tcll colour neutral",
 };
 
-#define FILTERS 3
+#define FILTERS 4
 char description_filters[FILTERS][50] = {
     "all",
     "bar",
     "nobar",
+    "solid bar",
 };
 
 #define INFINITY 37
@@ -389,6 +390,29 @@ bool filter_nobar(struct cube* c){
     return !filter_bar(c);
 }
 
+bool filter_solid_bar(struct cube* c){
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                u64 count = 0;
+                if (c->stickers[x][y][z][1] == c->stickers[1 - x][y][z][1] && c->stickers[x][y][z][2] == c->stickers[1 - x][y][z][2]){
+                    count++;
+                }
+                if (c->stickers[x][y][z][0] == c->stickers[x][1 - y][z][0] && c->stickers[x][y][z][2] == c->stickers[x][1 - y][z][2]){
+                    count++;
+                }
+                if (c->stickers[x][y][z][0] == c->stickers[x][y][1 - z][0] && c->stickers[x][y][z][1] == c->stickers[x][y][1 - z][1]){
+                    count++;
+                }
+                if (count >= 1){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 bool (*tests[TESTS])(struct cube*) = {
     pred_solved,
     pred_cll_yellow,
@@ -413,6 +437,7 @@ bool (*filters[FILTERS])(struct cube*) = {
     filter_all,
     filter_bar,
     filter_nobar,
+    filter_solid_bar,
 };
 
 #endif
