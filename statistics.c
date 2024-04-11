@@ -39,7 +39,7 @@ void generate_statistics(){
             for (u64 t = 0; t < TESTS; t++){
                 printf("%10" PRIu64, statistics[t][i]);
             }
-            printf("\n");
+            printf("   \n");
         }
         printf("\navg  ");
         for (u64 t = 0; t < TESTS; t++){
@@ -51,7 +51,7 @@ void generate_statistics(){
             }
             printf("%10.2f", ((f64) weighted_sum) / ((f64) sum));
         }
-        printf("\ntot  ");
+        printf("   \ntot  ");
         for (u64 t = 0; t < TESTS; t++){
             u64 sum = 0;
             for (u64 i = 0; i < 12; i++){
@@ -59,7 +59,7 @@ void generate_statistics(){
             }
             printf("%10" PRIu64, sum);
         }
-        printf("\n\n");
+        printf("   \n\n");
     }
 }
 
