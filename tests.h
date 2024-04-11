@@ -6,10 +6,10 @@
 #include "hash_table.h"
 #include "cubes_and_graph.h"
 
-#define TESTS 17
+#define TESTS 22
 u64 distances[TESTS][STATES];
 u64 statistics[TESTS][12];
-char description_tests[TESTS][50] = {
+char description_tests[TESTS][70] = {
     "solved",
     "cll yellow",
     "cll colour neutral",
@@ -27,6 +27,11 @@ char description_tests[TESTS][50] = {
     "CBL or TCBL colour neutral",
     "eg or tcll yellow",
     "eg or tcll colour neutral",
+    "teg1 (excluding eg1) colour neutral",
+    "teg1 (excluding eg1) only bars colour neutral",
+    "eg1ls (excluding teg1 and eg1) colour neutral",
+    "eg1ls (excluding teg1 and eg1) only bars colour neutral",
+    "egls (including teg and eg) colour neutral",
 };
 
 #define FILTERS 4
@@ -229,11 +234,6 @@ bool pred_cll_yellow(struct cube* c){
     bool f = c->stickers[0][0][1][2] == x && c->stickers[0][1][1][2] == x && c->stickers[1][0][1][2] == x && c->stickers[1][1][1][2] == x
                 && c->stickers[0][0][1][0] == c->stickers[0][1][1][0] && c->stickers[0][0][1][1] == c->stickers[1][0][1][1]; 
     return l || r || d || u || b || f;
-    /*
-    bool yellow = c->stickers[0][0][0][1] == YELLOW && c->stickers[0][0][1][1] == YELLOW && c->stickers[1][0][0][1] == YELLOW && c->stickers[1][0][1][1] == YELLOW;
-    bool ring = c->stickers[0][0][0][2] == BLUE && c->stickers[1][0][0][2] == BLUE && c->stickers[0][0][0][0] == ORANGE && c->stickers[0][0][1][0] == ORANGE ;
-    bool ring2 = c->stickers[0][0][1][2] == GREEN && c->stickers[1][0][1][2] == GREEN && c->stickers[1][0][0][0] == RED && c->stickers[1][0][1][0] == RED ;
-    return yellow && ring && ring2;*/
 }
 
 bool pred_cll_colour_neutral(struct cube* c){
@@ -413,6 +413,458 @@ bool filter_solid_bar(struct cube* c){
     return false;
 }
 
+bool colours_same(u8 x, u8 y){
+    return x == y;
+}
+
+bool colours_opposite(u8 x, u8 y){
+    if (x == ORANGE && y == RED){
+        return true;
+    }
+    if (x == RED && y == ORANGE){
+        return true;
+    }
+    if (x == YELLOW && y == WHITE){
+        return true;
+    }
+    if (x == WHITE && y == YELLOW){
+        return true;
+    }
+    if (x == BLUE && y == GREEN){
+        return true;
+    }
+    if (x == GREEN && y == BLUE){
+        return true;
+    }  
+    return false;
+}
+
+bool colours_adjacent(u8 x, u8 y){
+    return !(colours_same(x,y) || colours_opposite(x,y));
+}
+
+bool pred_teg1_excluding_eg1_colour_neutral(struct cube* c){
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                //for eg1 we want: same adj | opp adj
+                u64 count = 0;
+                //change xy. that means layer on z
+                if (c->stickers[x][y][z][2] == c->stickers[1 - x][y][z][2] &&
+                    c->stickers[x][y][z][2] == c->stickers[x][1 - y][z][2] && 
+                    (   c->stickers[x][y][z][2] == c->stickers[1 - x][1 - y][z][0] 
+                    || 
+                        c->stickers[x][y][z][2] == c->stickers[1 - x][1 - y][z][1]) 
+                    &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_same(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_opposite(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_opposite(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            ) 
+                    ) 
+                    ){
+                    return true;
+                }
+                //change xz. that means layer on y
+                if (c->stickers[x][y][z][1] == c->stickers[1 - x][y][z][1] &&
+                    c->stickers[x][y][z][1] == c->stickers[x][y][1 - z][1] && 
+                    (   c->stickers[x][y][z][1] == c->stickers[1 - x][y][1 - z][0] 
+                    || 
+                        c->stickers[x][y][z][1] == c->stickers[1 - x][y][1 - z][2]) 
+                    &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_same(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_opposite(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_opposite(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                    ) 
+                    ){
+                    return true;
+                }
+                //change yz. that means layer on x
+                if (c->stickers[x][y][z][0] == c->stickers[x][1 - y][z][0] &&
+                    c->stickers[x][y][z][0] == c->stickers[x][y][1 - z][0] && 
+                    (   c->stickers[x][y][z][0] == c->stickers[x][1 - y][1 - z][1] 
+                    || 
+                        c->stickers[x][y][z][0] == c->stickers[x][1 - y][1 - z][2]) 
+                    &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_same(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                        ||
+                            (
+                                    colours_opposite(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_opposite(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                    ) 
+                    ){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool pred_teg1_excluding_eg1_only_bars_colour_neutral(struct cube* c){
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                //for eg1 we want: same adj | opp adj
+                u64 count = 0;
+                //change xy. that means layer on z
+                if (c->stickers[x][y][z][2] == c->stickers[1 - x][y][z][2] &&
+                    c->stickers[x][y][z][2] == c->stickers[x][1 - y][z][2] && 
+                    (   c->stickers[x][y][z][2] == c->stickers[1 - x][1 - y][z][0] 
+                    || 
+                        c->stickers[x][y][z][2] == c->stickers[1 - x][1 - y][z][1]) 
+                    &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_same(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            )  
+                    ) 
+                    ){
+                    return true;
+                }
+                //change xz. that means layer on y
+                if (c->stickers[x][y][z][1] == c->stickers[1 - x][y][z][1] &&
+                    c->stickers[x][y][z][1] == c->stickers[x][y][1 - z][1] && 
+                    (   c->stickers[x][y][z][1] == c->stickers[1 - x][y][1 - z][0] 
+                    || 
+                        c->stickers[x][y][z][1] == c->stickers[1 - x][y][1 - z][2]) 
+                    &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_same(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                    ) 
+                    ){
+                    return true;
+                }
+                //change yz. that means layer on x
+                if (c->stickers[x][y][z][0] == c->stickers[x][1 - y][z][0] &&
+                    c->stickers[x][y][z][0] == c->stickers[x][y][1 - z][0] && 
+                    (   c->stickers[x][y][z][0] == c->stickers[x][1 - y][1 - z][1] 
+                    || 
+                        c->stickers[x][y][z][0] == c->stickers[x][1 - y][1 - z][2]) 
+                    &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_same(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                    ) 
+                    ){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool pred_eg1ls_excluding_teg1_and_eg1_colour_neutral(struct cube* c){
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                //for eg1 we want: same adj | opp adj
+                u64 count = 0;
+                //change xy. that means layer on z
+                if (c->stickers[x][y][z][2] == c->stickers[1 - x][y][z][2] &&
+                    c->stickers[x][y][z][2] == c->stickers[x][1 - y][z][2] && 
+                    c->stickers[x][y][z][2] != c->stickers[1 - x][1 - y][z][0] &&
+                    c->stickers[x][y][z][2] != c->stickers[1 - x][1 - y][z][1] &&
+                    c->stickers[x][y][z][2] != c->stickers[1 - x][1 - y][z][2] &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_same(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_opposite(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_opposite(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            ) 
+                    ) 
+                    ){
+                    return true;
+                }
+                //change xz. that means layer on y
+                if (c->stickers[x][y][z][1] == c->stickers[1 - x][y][z][1] &&
+                    c->stickers[x][y][z][1] == c->stickers[x][y][1 - z][1] && 
+                    c->stickers[x][y][z][1] != c->stickers[1 - x][y][1 - z][0] &&
+                    c->stickers[x][y][z][1] != c->stickers[1 - x][y][1 - z][1] &&
+                    c->stickers[x][y][z][1] != c->stickers[1 - x][y][1 - z][2] &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_same(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_opposite(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_opposite(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                    ) 
+                    ){
+                    return true;
+                }
+                //change yz. that means layer on x
+                if (c->stickers[x][y][z][0] == c->stickers[x][1 - y][z][0] &&
+                    c->stickers[x][y][z][0] == c->stickers[x][y][1 - z][0] && 
+                    c->stickers[x][y][z][0] != c->stickers[x][1 - y][1 - z][0] &&
+                    c->stickers[x][y][z][0] != c->stickers[x][1 - y][1 - z][1] &&
+                    c->stickers[x][y][z][0] != c->stickers[x][1 - y][1 - z][2] &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_same(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                        ||
+                            (
+                                    colours_opposite(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_opposite(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                    ) 
+                    ){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool pred_eg1ls_excluding_teg1_and_eg1_only_bars_colour_neutral(struct cube* c){
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                //for eg1 we want: same adj | opp adj
+                u64 count = 0;
+                //change xy. that means layer on z
+                if (c->stickers[x][y][z][2] == c->stickers[1 - x][y][z][2] &&
+                    c->stickers[x][y][z][2] == c->stickers[x][1 - y][z][2] && 
+                    c->stickers[x][y][z][2] != c->stickers[1 - x][1 - y][z][0] &&
+                    c->stickers[x][y][z][2] != c->stickers[1 - x][1 - y][z][1] &&
+                    c->stickers[x][y][z][2] != c->stickers[1 - x][1 - y][z][2] &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[1 - x][y][z][1])
+                                && 
+                                    colours_same(c->stickers[x][y][z][0], c->stickers[x][1 - y][z][0])
+                            )  
+                    ) 
+                    ){
+                    return true;
+                }
+                //change xz. that means layer on y
+                if (c->stickers[x][y][z][1] == c->stickers[1 - x][y][z][1] &&
+                    c->stickers[x][y][z][1] == c->stickers[x][y][1 - z][1] && 
+                    c->stickers[x][y][z][1] != c->stickers[1 - x][y][1 - z][0] &&
+                    c->stickers[x][y][z][1] != c->stickers[1 - x][y][1 - z][1] &&
+                    c->stickers[x][y][z][1] != c->stickers[1 - x][y][1 - z][2] &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[1 - x][y][z][2])
+                                && 
+                                    colours_same(c->stickers[x][y][z][0], c->stickers[x][y][1 - z][0])
+                            ) 
+                    ) 
+                    ){
+                    return true;
+                }
+                //change yz. that means layer on x
+                if (c->stickers[x][y][z][0] == c->stickers[x][1 - y][z][0] &&
+                    c->stickers[x][y][z][0] == c->stickers[x][y][1 - z][0] && 
+                    c->stickers[x][y][z][0] == c->stickers[x][y][1 - z][0] && 
+                    c->stickers[x][y][z][0] != c->stickers[x][1 - y][1 - z][0] &&
+                    c->stickers[x][y][z][0] != c->stickers[x][1 - y][1 - z][1] &&
+                    c->stickers[x][y][z][0] != c->stickers[x][1 - y][1 - z][2] &&
+                    (
+                            (
+                                    colours_same(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_adjacent(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                        ||
+                            (
+                                    colours_adjacent(c->stickers[x][y][z][2], c->stickers[x][1 - y][z][2])
+                                && 
+                                    colours_same(c->stickers[x][y][z][1], c->stickers[x][y][1 - z][1])
+                            ) 
+                    ) 
+                    ){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool pred_egls_including_teg_and_eg_colour_neutral(struct cube* c){
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                //for eg1 we want: same adj | opp adj
+                u64 count = 0;
+                //change xy. that means layer on z
+                if (c->stickers[x][y][z][2] == c->stickers[1 - x][y][z][2] &&
+                    c->stickers[x][y][z][2] == c->stickers[x][1 - y][z][2]
+                    ){
+                    return true;
+                }
+                //change xz. that means layer on y
+                if (c->stickers[x][y][z][1] == c->stickers[1 - x][y][z][1] &&
+                    c->stickers[x][y][z][1] == c->stickers[x][y][1 - z][1]
+                    ){
+                    return true;
+                }
+                //change yz. that means layer on x
+                if (c->stickers[x][y][z][0] == c->stickers[x][1 - y][z][0] &&
+                    c->stickers[x][y][z][0] == c->stickers[x][y][1 - z][0]
+                    ){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+
 bool (*tests[TESTS])(struct cube*) = {
     pred_solved,
     pred_cll_yellow,
@@ -431,6 +883,11 @@ bool (*tests[TESTS])(struct cube*) = {
     pred_CBL_or_TCBL_colour_neutral,
     pred_tcll_or_eg_yellow,
     pred_tcll_or_eg_colour_neutral,
+    pred_teg1_excluding_eg1_colour_neutral,
+    pred_teg1_excluding_eg1_only_bars_colour_neutral,
+    pred_eg1ls_excluding_teg1_and_eg1_colour_neutral,
+    pred_eg1ls_excluding_teg1_and_eg1_only_bars_colour_neutral,
+    pred_egls_including_teg_and_eg_colour_neutral,
 };
 
 bool (*filters[FILTERS])(struct cube*) = {
