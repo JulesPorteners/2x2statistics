@@ -26,7 +26,8 @@ void generate_statistics(){
             for (u64 i = 0; i < STATES; i++){
                 if (distances[0][i] >= 4 && filters[f](&cubes[i])){
                     statistics[t][distances[t][i]]++;
-                }  
+                }
+                
             }
         }
         printf("moves");

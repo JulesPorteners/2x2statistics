@@ -6,7 +6,7 @@
 #include "hash_table.h"
 #include "cubes_and_graph.h"
 
-#define TESTS 22
+#define TESTS 26
 u64 distances[TESTS][STATES];
 u64 statistics[TESTS][12];
 char description_tests[TESTS][70] = {
@@ -32,6 +32,10 @@ char description_tests[TESTS][70] = {
     "eg1ls (excluding teg1 and eg1) colour neutral",
     "eg1ls (excluding teg1 and eg1) only bars colour neutral",
     "egls (including teg and eg) colour neutral",
+    "solid bar",
+    "pseudo eg colour neutral",
+    "pseudo cbl or tcbl colour neutral",
+    "permutation only",
 };
 
 #define FILTERS 4
@@ -864,6 +868,117 @@ bool pred_egls_including_teg_and_eg_colour_neutral(struct cube* c){
     return false;
 }
 
+struct cube cube_inverse(struct cube* c){
+    struct cube s;
+    cube_constructor(&s);
+    struct cube r;
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                u64 xd;
+                u64 yd;
+                u64 zd;
+                u64 d0;
+                u64 d1;
+                u64 d2;
+                for (u64 d = 0; d < 3; d++){
+                    switch (c->stickers[x][y][z][d]){
+                        case ORANGE:
+                            xd = 0;
+                            break;
+                        case RED:
+                            xd = 1;
+                            break;
+                        case YELLOW:
+                            yd = 0;
+                            break;
+                        case WHITE:
+                            yd = 1;
+                            break;
+                        case BLUE:
+                            zd = 0;
+                            break;
+                        case GREEN:
+                            zd = 1;
+                            break;
+                    }
+                    switch (d){
+                        case 0: d0 = c->stickers[x][y][z][d] / 2; break;
+                        case 1: d1 = c->stickers[x][y][z][d] / 2; break;
+                        case 2: d2 = c->stickers[x][y][z][d] / 2; break;
+                    } 
+                }
+                r.stickers[xd][yd][zd][d0] = s.stickers[x][y][z][0];
+                r.stickers[xd][yd][zd][d1] = s.stickers[x][y][z][1];
+                r.stickers[xd][yd][zd][d2] = s.stickers[x][y][z][2];
+                
+            }
+        }
+    }
+    return r;
+}
+
+bool pred_pseudo(bool (*pred)(struct cube*), struct cube* c){
+    //being able to do exactly 1 move on the inverse and go to a certain set
+    struct cube i = cube_inverse(c);
+    for (u64 m = 0; m < MOVES; m++){
+        cube_move(&i, m);
+        if ((*pred)(&i)){
+            return true;
+        }
+        switch (m % 3){
+            case 0:
+                cube_move(&i, m + 1);
+                break;
+            case 1:
+                cube_move(&i, m - 1);
+                break;
+            case 2:
+                cube_move(&i, m);
+                break;
+        }
+    }
+    return false;
+}
+
+bool pred_pseudo_eg_colourneutral(struct cube* c){
+    return pred_pseudo(pred_face_colourneutral, c);
+}
+
+bool pred_pseudo_cbl_or_tcbl_colourneutral(struct cube* c){
+    return pred_pseudo(pred_CBL_or_TCBL_colour_neutral, c);
+}
+
+bool pred_permutation_only(struct cube* c){
+    struct cube s;
+    cube_constructor(&s);
+    struct cube cc = *c;
+    for (u64 x = 0; x < 2; x++){
+        for (u64 y = 0; y < 2; y++){
+            for (u64 z = 0; z < 2; z++){
+                bool stop = true;
+                for (u64 i = 0; i < 3; i++){
+                    twist(&cc, x, y, z);
+                    if (cc.stickers[x][y][z][0] != s.stickers[x][y][z][0]){
+                        continue;
+                    }
+                    if (cc.stickers[x][y][z][1] != s.stickers[x][y][z][1]){
+                        continue;
+                    }
+                    if (cc.stickers[x][y][z][2] != s.stickers[x][y][z][2]){
+                        continue;
+                    }
+                    stop = false;
+                }
+                if (stop){
+                    return false;
+                } 
+            }
+        }
+    }
+    return true;
+}
+
 
 bool (*tests[TESTS])(struct cube*) = {
     pred_solved,
@@ -888,6 +1003,10 @@ bool (*tests[TESTS])(struct cube*) = {
     pred_eg1ls_excluding_teg1_and_eg1_colour_neutral,
     pred_eg1ls_excluding_teg1_and_eg1_only_bars_colour_neutral,
     pred_egls_including_teg_and_eg_colour_neutral,
+    filter_solid_bar,
+    pred_pseudo_eg_colourneutral,
+    pred_pseudo_cbl_or_tcbl_colourneutral,
+    pred_permutation_only,
 };
 
 bool (*filters[FILTERS])(struct cube*) = {
